@@ -6,7 +6,7 @@ import asyncio
 import ipaddress
 from collections.abc import AsyncIterator, Awaitable
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal, cast
 from uuid import UUID, uuid4
@@ -173,6 +173,14 @@ def _required_datetime(value: datetime | None, *, local: bool = False) -> dateti
     result = _safe_datetime(value, local=local)
     assert result is not None
     return result
+
+
+def _next_scheduled_at(now: datetime | None = None) -> datetime:
+    current = (now or datetime.now(UTC)).astimezone(LOCAL_ZONE)
+    scheduled = current.replace(hour=3, minute=0, second=0, microsecond=0)
+    if current >= scheduled:
+        scheduled += timedelta(days=1)
+    return scheduled
 
 
 def _parse_uuid(value: str, resource: str) -> UUID:
@@ -503,7 +511,10 @@ async def sync_status(session: AsyncSession = Depends(get_session)) -> SyncStatu
         else None
     )
     return SyncStatusResponse(
-        running=coordinator.is_running(), lastRun=last, nextScheduledAt=None, hostOnline=True
+        running=coordinator.is_running(),
+        lastRun=last,
+        nextScheduledAt=_next_scheduled_at(),
+        hostOnline=True,
     )
 
 

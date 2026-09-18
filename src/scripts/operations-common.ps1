@@ -34,6 +34,8 @@ function Write-OperationalLog([string] $Path, [string] $Event, [string] $Status,
 
 function Get-BackendPython([string] $BackendDirectory, [string] $ConfiguredPython) {
     if ($ConfiguredPython) { return $ConfiguredPython }
+    $py313 = Join-Path $BackendDirectory ".venv313\Scripts\python.exe"
+    if (Test-Path -LiteralPath $py313) { return $py313 }
     $venvPython = Join-Path $BackendDirectory ".venv\Scripts\python.exe"
     if (Test-Path -LiteralPath $venvPython) { return $venvPython }
     return "python"

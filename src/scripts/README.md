@@ -5,6 +5,18 @@ dependencias externas. Ejecutalos desde el repositorio o usa rutas absolutas.
 
 ## Primera puesta en marcha
 
+Antes del primer arranque, aplica las migraciones sobre la base local:
+
+```powershell
+Push-Location src/backend
+try { ./.venv313/Scripts/python.exe -m alembic upgrade head }
+finally { Pop-Location }
+```
+
+Si usas otro entorno Python compatible, sustituye la ruta del ejecutable. El
+arranque no migra automáticamente: así se evita cambiar el esquema sin una
+acción operativa explícita.
+
 1. Instala las dependencias Python y Node en el equipo.
 2. Completa `src/backend/.env` a partir de `.env.example`. El token local y las
    credenciales OAuth deben estar fuera del repositorio.

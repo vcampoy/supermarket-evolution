@@ -10,7 +10,7 @@ import pytest
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from app.api.main import app, coordinator
+from app.api.main import _next_scheduled_at, app, coordinator
 from app.infrastructure.db import Base, get_session
 from app.infrastructure.models import GmailMessageModel, ProductModel, TicketItemModel, TicketModel
 
@@ -156,3 +156,14 @@ async def test_concurrent_sync_returns_conflict(api_client, monkeypatch):
     release.set()
     await asyncio.sleep(0)
     await coordinator.finish()
+
+
+def test_next_scheduled_at_is_the_next_local_three_am() -> None:
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    zone = ZoneInfo("Europe/Madrid")
+    before = _next_scheduled_at(datetime(2026, 9, 18, 2, 59, tzinfo=zone))
+    after = _next_scheduled_at(datetime(2026, 9, 18, 3, 0, tzinfo=zone))
+    assert before == datetime(2026, 9, 18, 3, 0, tzinfo=zone)
+    assert after == datetime(2026, 9, 19, 3, 0, tzinfo=zone)
