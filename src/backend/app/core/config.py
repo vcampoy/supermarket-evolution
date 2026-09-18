@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     gmail_token_path: str = "../../secrets/gmail-token.json"
     tickets_directory: str = "../../tickets"
     gmail_max_attachment_bytes: int = 20 * 1024 * 1024
+    api_query_timeout_seconds: float = 5.0
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="SUPERMARKET_", extra="ignore")
 
