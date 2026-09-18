@@ -33,17 +33,31 @@ function Write-OperationalLog([string] $Path, [string] $Event, [string] $Status,
 }
 
 function Get-BackendPython([string] $BackendDirectory, [string] $ConfiguredPython) {
-    if ($ConfiguredPython) { return $ConfiguredPython }
-    $py313 = Join-Path $BackendDirectory ".venv313\Scripts\python.exe"
-    if (Test-Path -LiteralPath $py313) { return $py313 }
-    $venvPython = Join-Path $BackendDirectory ".venv\Scripts\python.exe"
-    if (Test-Path -LiteralPath $venvPython) { return $venvPython }
-    return "python"
-}
+    $candidates = @()
+    if ($ConfiguredPython) {
+        $candidates += $ConfiguredPython
+    }
+    else {
+        $candidates += (Join-Path $BackendDirectory ".venv\Scripts\python.exe")
+        # Compatibility with the environment used before .venv became the documented standard.
+        $candidates += (Join-Path $BackendDirectory ".venv313\Scripts\python.exe")
+        $candidates += "python"
+    }
 
-function Activate-BackendEnvironment([string] $BackendDirectory) {
-    $activate = Join-Path $BackendDirectory ".venv\Scripts\Activate.ps1"
-    if (Test-Path -LiteralPath $activate) { . $activate }
+    foreach ($candidate in $candidates) {
+        if ([IO.Path]::IsPathRooted($candidate) -and -not (Test-Path -LiteralPath $candidate)) {
+            continue
+        }
+        try {
+            $version = (& $candidate -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>$null | Select-Object -Last 1)
+            if ($LASTEXITCODE -eq 0 -and $version -eq "3.13") { return $candidate }
+        }
+        catch {
+            continue
+        }
+    }
+
+    throw "Python 3.13 is required. From src\backend run: uv venv --clear --python 3.13 --seed .venv"
 }
 
 function Test-TailscaleIPv4([string] $Address) {

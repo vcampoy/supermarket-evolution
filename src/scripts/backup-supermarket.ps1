@@ -9,7 +9,6 @@ param(
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path (Get-ProjectRoot) "backups" }
 $backend = Get-BackendDirectory $BackendDirectory
 if ($PSCmdlet.ShouldProcess("local database, PDFs and non-secret config", "Create backup in $OutputDirectory")) {
-    Activate-BackendEnvironment $backend
     $python = Get-BackendPython $backend $PythonExecutable
     Push-Location $backend
     try {

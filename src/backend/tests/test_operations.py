@@ -87,6 +87,10 @@ def test_scheduled_execution_simulation_retries_without_logging_output(tmp_path:
     fake_python = tmp_path / "fake-python.cmd"
     fake_python.write_text(
         "@echo off\n"
+        'if "%~1"=="-c" (\n'
+        "  echo 3.13\n"
+        "  exit /b 0\n"
+        ")\n"
         "if exist \"%~dp0called\" exit /b 0\n"
         "echo called>\"%~dp0called\"\n"
         "exit /b 1\n",
@@ -122,6 +126,10 @@ def test_two_synchronizations_do_not_overlap(tmp_path: Path) -> None:
     fake_python = tmp_path / "slow-python.cmd"
     fake_python.write_text(
         "@echo off\n"
+        'if "%~1"=="-c" (\n'
+        "  echo 3.13\n"
+        "  exit /b 0\n"
+        ")\n"
         "ping -n 3 127.0.0.1 >nul\n"
         "exit /b 0\n",
         encoding="ascii",

@@ -29,7 +29,6 @@ try {
     }
     Write-OperationalLog $log "sync" "started"
     Rotate-OperationalLog $log
-    Activate-BackendEnvironment $backend
     $python = Get-BackendPython $backend $PythonExecutable
     Push-Location $backend
     try {

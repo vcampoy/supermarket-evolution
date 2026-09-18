@@ -5,22 +5,28 @@ dependencias externas. Ejecutalos desde el repositorio o usa rutas absolutas.
 
 ## Primera puesta en marcha
 
-Antes del primer arranque, aplica las migraciones sobre la base local:
+Sigue primero la [puesta en marcha de la raíz](../../README.md), que crea el
+entorno estándar `src/backend/.venv` con Python 3.13, instala las dependencias y
+el frontend, y aplica las migraciones.
+
+La migración obligatoria se ejecuta así:
 
 ```powershell
 Push-Location src/backend
-try { ./.venv313/Scripts/python.exe -m alembic upgrade head }
+try { ./.venv/Scripts/python.exe -m alembic upgrade head }
 finally { Pop-Location }
 ```
 
-Si usas otro entorno Python compatible, sustituye la ruta del ejecutable. El
-arranque no migra automáticamente: así se evita cambiar el esquema sin una
-acción operativa explícita.
+El arranque no migra automáticamente: así se evita cambiar el esquema sin una
+acción operativa explícita. Los scripts aceptan `-PythonExecutable` cuando sea
+necesario, pero rechazan cualquier intérprete que no sea Python 3.13.x.
 
-1. Instala las dependencias Python y Node en el equipo.
-2. Completa `src/backend/.env` a partir de `.env.example`. El token local y las
+1. Instala las dependencias Python y Node según el README raíz.
+2. Si vas a importar datos reales, completa `src/backend/.env` a partir de
+   `.env.example`. El token local y las
    credenciales OAuth deben estar fuera del repositorio.
-3. Autoriza Gmail según [`docs/gmail-setup.md`](../../docs/gmail-setup.md).
+3. Autoriza Gmail sólo cuando quieras importar según
+   [`docs/gmail-setup.md`](../../docs/gmail-setup.md).
 4. Ejecuta `./src/scripts/start-local.ps1`. Compila la SPA y sirve `dist/` desde
    el backend en `http://127.0.0.1:8000`.
 

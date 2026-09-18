@@ -72,8 +72,8 @@ OK; no se crearon logs ni se iniciaron procesos
 
 La primera invocación global de `python -m pytest` usó el Python 3.12 del
 `PATH`, que no tenía pytest. Se repitió con el entorno Python 3.13 del proyecto
-(`.venv313`), coherente con `pyproject.toml`. Los scripts ahora prefieren ese
-entorno cuando está disponible.
+(`.venv313` en aquella revisión), coherente con `pyproject.toml`. La puesta en
+marcha actual estandariza el entorno como `.venv` y valida que sea Python 3.13.
 
 ## Fallos encontrados y corregidos
 
@@ -88,9 +88,9 @@ entorno cuando está disponible.
 4. **La puesta en marcha no indicaba aplicar migraciones.** Se documentó el
    comando explícito `alembic upgrade head`; el arranque no migra
    automáticamente para evitar cambios de esquema implícitos.
-5. **Los scripts podían elegir primero un entorno `.venv` Python 3.12** aunque
-   el proyecto exige Python 3.13. Ahora prefieren `.venv313` y permiten anular
-   la selección con `-PythonExecutable`.
+5. **Los scripts podían elegir un entorno Python incompatible** aunque el
+   proyecto exige Python 3.13. Ahora validan la versión antes de usar `.venv`,
+   el entorno heredado `.venv313`, `python` o `-PythonExecutable`.
 
 ## Pasos manuales exactos pendientes
 
@@ -103,15 +103,17 @@ entorno cuando está disponible.
 5. Guardar el JSON descargado fuera de Git y configurar
    `SUPERMARKET_GMAIL_CLIENT_SECRETS_PATH`.
 6. Confirmar explícitamente antes de continuar con el consentimiento OAuth.
-7. Desde `src/backend`, ejecutar `python -m app.cli gmail-auth` y completar el
-   navegador local sin compartir secretos en el chat.
+7. Desde `src/backend`, ejecutar
+   `.\.venv\Scripts\python.exe -m app.cli gmail-auth` y completar el navegador
+   local sin compartir secretos en el chat.
 8. Verificar que la cuenta autorizada coincide con
    `SUPERMARKET_GMAIL_ACCOUNT`.
-9. Ejecutar `python -m app.cli sync --all`.
+9. Ejecutar `.\.venv\Scripts\python.exe -m app.cli sync --all`.
 10. Comparar sin mostrar contenido sensible el número de mensajes, PDFs,
     tickets y registros `needs_review`.
-11. Ejecutar dos veces `python -m app.cli sync --since-last` y comprobar que no
-    aumentan tickets duplicados ni PDFs duplicados.
+11. Ejecutar dos veces
+    `.\.venv\Scripts\python.exe -m app.cli sync --since-last` y comprobar que
+    no aumentan tickets duplicados ni PDFs duplicados.
 
 ### Tailscale y prueba móvil
 

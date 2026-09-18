@@ -14,7 +14,6 @@ if (-not $DatabasePath) { $DatabasePath = Join-Path $backend "supermarket-evolut
 if (-not $TicketsDirectory) { $TicketsDirectory = Join-Path (Get-ProjectRoot) "tickets" }
 if ($PSCmdlet.ShouldProcess("local database and ticket archive", "Restore $ArchivePath")) {
     Write-Warning "Stop the backend before restoring. Existing files are overwritten only when their backup path matches."
-    Activate-BackendEnvironment $backend
     $python = Get-BackendPython $backend $PythonExecutable
     Push-Location $backend
     try {

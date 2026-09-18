@@ -16,7 +16,6 @@ if (-not $isLoopback -and [string]::IsNullOrWhiteSpace($env:SUPERMARKET_LOCAL_AP
     throw "SUPERMARKET_LOCAL_APP_TOKEN must be set before enabling a Tailscale bind."
 }
 if ($PSCmdlet.ShouldProcess("Supermarket Evolution backend", "Start on $BindAddress`:$Port")) {
-    Activate-BackendEnvironment $backend
     $python = Get-BackendPython $backend $PythonExecutable
     Push-Location $backend
     try {

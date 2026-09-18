@@ -27,11 +27,12 @@ ejecución perdida. `MultipleInstances IgnoreNew` y un mutex con nombre en
 `sync-tickets.ps1` cubren tanto el solapamiento de Task Scheduler como dos
 invocaciones manuales.
 
-Cada ejecución llama a `python -m app.cli sync --since-last`, reintenta como
-máximo tres veces y deja sólo estado operativo (inicio, resultado y código de
-salida) en `logs/sync-tickets.log`. El log rota al superar 5 MiB y conserva
-cinco copias. No se escribe la respuesta de Gmail, el contenido de PDFs, el
-refresh token ni el token local.
+Cada ejecución resuelve y valida el Python 3.13 de `.venv`, y llama a
+`python -m app.cli sync --since-last`. Reintenta como máximo tres veces y deja
+sólo estado operativo (inicio, resultado y código de salida) en
+`logs/sync-tickets.log`. El log rota al superar 5 MiB y conserva cinco copias.
+No se escribe la respuesta de Gmail, el contenido de PDFs, el refresh token ni
+el token local.
 
 ## Acceso móvil con Tailscale
 
