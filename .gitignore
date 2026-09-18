@@ -235,6 +235,12 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
+# Python local environments and databases
+.venv*/
+*.db
+*.sqlite
+*.sqlite3
+
 # Operating system files
 .DS_Store
 Thumbs.db
