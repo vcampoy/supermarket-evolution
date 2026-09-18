@@ -39,6 +39,14 @@ flowchart LR
 
 Los repositorios se expresan como puertos consumidos por `application`. La implementación SQLite usa SQLAlchemy 2 y puede sustituirse por PostgreSQL sin cambiar entidades ni casos de uso. Pydantic sólo traduce DTOs en el borde; los servicios reciben tipos de dominio.
 
+## Extracción de PDF
+
+La primera versión usa `pypdf` para extraer el texto embebido del PDF de forma
+determinista, reproducible y sin enviar tickets a un servicio externo. No usa
+OCR: un documento sin texto extraíble queda archivado con estado `failed` para
+revisión y reintento. El parser conserva sólo un extracto acotado para
+auditoría y nunca escribe el contenido completo en logs.
+
 ## Flujo de importación
 
 1. Scheduler o usuario crea un `sync_run` con modo `backfill`, `incremental` o `manual`.

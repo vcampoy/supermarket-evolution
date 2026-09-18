@@ -8,6 +8,7 @@ from uuid import UUID
 class ParseStatus(StrEnum):
     READY = "ready"
     PARTIAL = "partial"
+    NEEDS_REVIEW = "needs_review"
     FAILED = "failed"
 
 

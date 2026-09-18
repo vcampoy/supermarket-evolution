@@ -248,3 +248,4 @@ Thumbs.db
 # Private project notes and tickets
 /tickets/
 /prompts/
+/secrets/

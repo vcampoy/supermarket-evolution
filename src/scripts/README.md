@@ -1,3 +1,15 @@
 # Scripts operativos
 
-Los scripts operativos de sincronización, copias y recuperación se incorporarán en las fases de Gmail y operación. Esta carpeta queda reservada para tareas que ejecutan procesos locales, sin secretos ni datos reales.
+La operación de Gmail vive en el módulo CLI del backend:
+
+```text
+cd src/backend
+python -m app.cli gmail-auth
+python -m app.cli sync --all
+python -m app.cli sync --since-last
+python -m app.cli parse-file C:\ruta\ticket.pdf
+python -m app.cli reparse --failed
+```
+
+La guía de credenciales OAuth está en [`docs/gmail-setup.md`](../../docs/gmail-setup.md).
+Los secretos y los PDF deben permanecer fuera de Git.

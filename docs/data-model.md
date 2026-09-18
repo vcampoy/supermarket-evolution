@@ -22,10 +22,11 @@ Este modelo es lógico y portable. Los tipos `UUID`, `TIMESTAMP WITH TIME ZONE` 
 | `subject` | VARCHAR(998) | Sí | Asunto para auditoría, no identidad |
 | `received_at_utc` | TIMESTAMPTZ | Sí | Fecha técnica |
 | `attachment_filename` | VARCHAR(255) | No | Nombre original |
+| `attachment_id` | VARCHAR(255) | Sí | Identificador del adjunto en Gmail |
 | `attachment_size_bytes` | BIGINT | No | `> 0`, límite configurable |
 | `attachment_sha256` | CHAR(64) | No | Índice; no se sobrescribe |
 | `original_pdf_path` | VARCHAR(1024) | No | Ruta relativa a `tickets/` |
-| `parse_status` | VARCHAR(16) | No | `pending`, `ready`, `partial`, `failed` |
+| `parse_status` | VARCHAR(16) | No | `pending`, `ready`, `partial`, `needs_review`, `failed` |
 | `parser_version` | VARCHAR(32) | Sí | Versión que procesó el PDF |
 | `parse_error_code` | VARCHAR(64) | Sí | Código accionable sin secretos |
 | `created_at_utc` | TIMESTAMPTZ | No | Auditoría |
@@ -44,7 +45,9 @@ Este modelo es lógico y portable. Los tipos `UUID`, `TIMESTAMP WITH TIME ZONE` 
 | `purchased_local_time` | TIME | Sí | Hora si el PDF la contiene |
 | `purchased_timezone` | VARCHAR(32) | No | CHECK = `Europe/Madrid` |
 | `total_cents` | INTEGER | No | Importe total del ticket |
-| `parse_status` | VARCHAR(16) | No | `ready`, `partial`, `failed` |
+| `store_name` | VARCHAR(255) | Sí | Tienda si aparece en el PDF |
+| `raw_text_excerpt` | VARCHAR(1000) | Sí | Extracto acotado para auditoría; nunca el PDF completo |
+| `parse_status` | VARCHAR(16) | No | `ready`, `partial`, `needs_review`, `failed` |
 | `created_at_utc` | TIMESTAMPTZ | No | Auditoría |
 | `updated_at_utc` | TIMESTAMPTZ | No | Auditoría |
 
@@ -97,7 +100,7 @@ Restricción UNIQUE `(normalization_key, comparable_basis)`. La base forma parte
 | `line_amount_cents` | INTEGER | No | Importe de línea |
 | `comparable_price_cents` | INTEGER | Sí | Céntimos por base |
 | `comparable_basis` | VARCHAR(8) | Sí | `unit` o `kg` |
-| `parse_status` | VARCHAR(16) | No | `ready`, `partial`, `failed` |
+| `parse_status` | VARCHAR(16) | No | `ready`, `partial`, `needs_review`, `failed` |
 | `parse_note` | VARCHAR(255) | Sí | Motivo sin datos sensibles |
 
 Índices: UNIQUE `(ticket_id, line_index)`, INDEX `(product_id, ticket_id)`, INDEX `(ticket_id, line_index)`.
