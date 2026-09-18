@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     gmail_client_secrets_path: str = "../../secrets/gmail-client-secret.json"
     gmail_token_path: str = "../../secrets/gmail-token.json"
     tickets_directory: str = "../../tickets"
+    frontend_dist_directory: str = "../frontend/dist"
+    bind_host: str = "127.0.0.1"
+    bind_port: int = 8000
+    log_directory: str = "../../logs"
+    backup_directory: str = "../../backups"
     gmail_max_attachment_bytes: int = 20 * 1024 * 1024
     api_query_timeout_seconds: float = 5.0
 

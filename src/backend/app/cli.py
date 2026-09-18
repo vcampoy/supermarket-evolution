@@ -17,6 +17,12 @@ from app.infrastructure.db import SessionFactory
 from app.infrastructure.gmail import GmailApiClient, authorize_gmail
 from app.infrastructure.parser import parse_pdf_bytes, parse_pdf_file
 from app.infrastructure.repositories import SqlAlchemyIngestionRepository
+from app.operations.backup import (
+    BackupError,
+    create_backup,
+    restore_backup,
+    sqlite_path_from_url,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -31,6 +37,14 @@ def _parser() -> argparse.ArgumentParser:
     parse_file.add_argument("pdf", type=Path)
     reparse = subparsers.add_parser("reparse")
     reparse.add_argument("--failed", action="store_true", required=True)
+    backup = subparsers.add_parser("backup")
+    backup.add_argument("--output", type=Path, required=True)
+    backup.add_argument("--config-file", action="append", type=Path, default=[])
+    restore = subparsers.add_parser("restore")
+    restore.add_argument("archive", type=Path)
+    restore.add_argument("--database", type=Path, required=True)
+    restore.add_argument("--tickets", type=Path, required=True)
+    restore.add_argument("--config", type=Path)
     return parser
 
 
@@ -102,6 +116,30 @@ def _print_parsed(path: Path) -> int:
     return 0
 
 
+def _backup(output: Path, config_files: list[Path]) -> int:
+    settings = get_settings()
+    backend_root = Path.cwd()
+    result = create_backup(
+        database_path=sqlite_path_from_url(settings.database_url, base_dir=backend_root),
+        tickets_directory=Path(settings.tickets_directory),
+        output_directory=output,
+        config_files=tuple(config_files),
+    )
+    print(json.dumps({"archive": str(result.archive_path), "pdfs": result.pdf_count, "config": result.config_count}))
+    return 0
+
+
+def _restore(archive: Path, database: Path, tickets: Path, config: Path | None) -> int:
+    result = restore_backup(
+        archive_path=archive,
+        database_path=database,
+        tickets_directory=tickets,
+        config_directory=config,
+    )
+    print(json.dumps({"archive": str(result.archive_path), "pdfs": result.restored_pdf_count, "config": result.restored_config_count}))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
@@ -114,7 +152,11 @@ def main(argv: list[str] | None = None) -> int:
             return _print_parsed(args.pdf)
         if args.command == "reparse":
             return asyncio.run(_reparse_failed())
-    except GmailError as exc:
+        if args.command == "backup":
+            return _backup(args.output, args.config_file)
+        if args.command == "restore":
+            return _restore(args.archive, args.database, args.tickets, args.config)
+    except (GmailError, BackupError) as exc:
         print(json.dumps({"errorCode": exc.code}), file=sys.stderr)
         return 2
     return 2

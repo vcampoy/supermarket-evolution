@@ -249,3 +249,5 @@ Thumbs.db
 /tickets/
 /prompts/
 /secrets/
+/backups/
+/logs/

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 from collections.abc import AsyncIterator, Awaitable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Literal, cast
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
@@ -14,10 +16,13 @@ from fastapi import APIRouter, Depends, FastAPI, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.types import Scope
 
 from app.api.schemas import (
     ErrorResponse,
@@ -63,6 +68,31 @@ from app.infrastructure.query_repositories import (
 )
 
 LOCAL_ZONE = ZoneInfo("Europe/Madrid")
+
+
+def _allowed_bind_host(value: str) -> bool:
+    if value in {"127.0.0.1", "localhost", "::1"}:
+        return True
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return address.version == 4 and address in ipaddress.ip_network("100.64.0.0/10")
+
+
+class SPAStaticFiles(StaticFiles):
+    """Serve the React entry point for browser-history routes."""
+
+    async def get_response(self, path: str, scope: Scope) -> Any:
+        try:
+            response = await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if exc.status_code != 404 or "." in Path(path).name:
+                raise
+            return await super().get_response("index.html", scope)
+        if response.status_code == 404 and "." not in Path(path).name:
+            return await super().get_response("index.html", scope)
+        return response
 
 
 class APIError(Exception):
@@ -544,6 +574,10 @@ async def get_sync_run(
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    if not _allowed_bind_host(get_settings().bind_host):
+        raise RuntimeError("SUPERMARKET_BIND_HOST must be loopback or an explicit Tailscale IPv4 address")
+    if get_settings().bind_host not in {"127.0.0.1", "localhost", "::1"} and not get_settings().local_app_token:
+        raise RuntimeError("SUPERMARKET_LOCAL_APP_TOKEN is required for a Tailscale bind")
     yield
 
 
@@ -601,3 +635,7 @@ async def database_error_handler(request: Request, _exc: SQLAlchemyError) -> JSO
 
 app.include_router(router, prefix="/api/v1")
 app.include_router(router, prefix="/api")
+
+frontend_directory = Path(settings.frontend_dist_directory).expanduser()
+if frontend_directory.is_dir():
+    app.mount("/", SPAStaticFiles(directory=frontend_directory, html=True), name="frontend")

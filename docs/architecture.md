@@ -101,3 +101,6 @@ El prefijo REST es `/api/v1`. Las respuestas contienen datos ya listos para pres
 - Fusión automática de productos por similitud semántica.
 
 Las decisiones de local-first y Tailscale se formalizan en [`adr/0001-local-first.md`](adr/0001-local-first.md).
+
+La operación concreta de Task Scheduler, backups, restore y arranque está en
+[`operations.md`](operations.md).
