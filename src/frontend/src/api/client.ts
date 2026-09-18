@@ -29,7 +29,8 @@ export class ApiError extends Error {
   }
 }
 
-const baseUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000/api/v1";
+const defaultBaseUrl = import.meta.env.MODE === "test" ? "http://localhost:8000/api/v1" : "/api/v1";
+const baseUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? defaultBaseUrl;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const fetchInit: RequestInit = { ...init, headers: { Accept: "application/json", ...init?.headers } };
